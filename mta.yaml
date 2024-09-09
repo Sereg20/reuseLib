@@ -1,0 +1,107 @@
+_schema-version: "3.2"
+ID: forlib11
+version: 0.0.1
+modules:
+- name: forlib11-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: forlib11-destination-service
+    parameters:
+      content-target: true
+  - name: forlib11-repo-host
+    parameters:
+      service-key:
+        name: forlib11-repo-host-key
+  - name: forlib11-uaa
+    parameters:
+      service-key:
+        name: forlib11-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: btp-samples-multiple-apps_repo_host
+          ServiceInstanceName: forlib11-html5-srv
+          ServiceKeyName: forlib11-repo-host-key
+          sap.cloud.service: btp.samples.multiple.apps
+        - Name: btp-samples-multiple-apps_uaa
+          ServiceInstanceName: forlib11-xsuaa-srv
+          ServiceKeyName: forlib11-uaa-key
+          sap.cloud.service: btp.samples.multiple.apps
+          Authentication: OAuth2UserTokenExchange
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: forlib11-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: forlib11-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - name: consume
+      artifacts:
+      - consume.zip
+      target-path: resources/
+    - name: btpsamplesmultipleappslib
+      artifacts:
+      - btpsamplesmultipleappslib.zip
+      target-path: resources/
+- name: consume
+  type: html5
+  path: consume
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: btpsamplesmultipleappslib
+  type: html5
+  path: lib
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: forlib11-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+    service-name: forlib11-xsuaa-srv
+- name: forlib11-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: forlib11-html5-srv
+    service-plan: app-host
+- name: forlib11-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: forlib11-destination-service
+    service-plan: lite
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true

@@ -1,0 +1,8 @@
+<mvc:View controllerName="consume.controller.View1"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m"
+    xmlns:lib="btp.samples.multiple.apps.lib">
+    <Page id="page" title="{i18n>title}">
+        <lib:controls.Reuse text="Consume App"/>
+    </Page>
+</mvc:View>
